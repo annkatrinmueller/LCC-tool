@@ -1,0 +1,106 @@
+import numpy as np
+import pandas as pd
+from sklearn.metrics import mean_squared_error
+from math import sqrt
+
+import matplotlib.pyplot as plt
+from IPython.display import clear_output
+
+
+# - Water Data -
+
+# water_data: from Berlin water price
+# 🔴 GEÄNDERT: historical water series extended to 2025-S2. Berlin tariffs remain unchanged since 2022.
+water_data = {"DATE" : pd.date_range(start="2008", end="2026-01-31", freq="6ME", inclusive="left"),
+              "WF" : [0.002071, 0.002071, 0.002038, 0.002038, 0.0020325, 0.0020325, 0.002027, 0.002027, 0.002027, 0.002027, 0.002027, 0.002027, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694],
+              "WWF" : [0.002567, 0.002567, 0.002543, 0.002543, 0.002504, 0.002504, 0.002464, 0.002464, 0.002464, 0.002464, 0.002464, 0.002464, 0.002464, 0.002464, 0.002307, 0.002307, 0.002303, 0.002303, 0.002303, 0.002303, 0.00221, 0.00221, 0.00221, 0.00221, 0.00221, 0.00221, 0.00221, 0.00221, 0.002155, 0.002155, 0.002155, 0.002155, 0.002155, 0.002155, 0.002155, 0.002155]
+             }
+
+
+
+# - Electricity Data -
+
+# Historical elc. data are from EUROSTAT
+# data_elc: elc. data from EUROSTAT used elc. from 50 Mio kWh/a
+# 🔴 GEÄNDERT: extended through 2025-S2; prediction now starts after 2025-S2.
+# Added values for 2023-S2 to 2025-S2 use Eurostat non-household EU aggregate excluding-tax values
+# reported in Eurostat Electricity price statistics Figure 7 text; see HISTORICAL_INPUT_SOURCES.
+data_elc = {
+        "DATE"    : pd.date_range(start="2004", end="2026-01-31", freq="6ME", inclusive="left"),
+        "no_tax"  : [0.0764, 0.0793, 0.084, 0.0877, 0.0949, 0.0963, 0.1003, 0.0832, 0.09, 0.0899, 0.0942, 0.0901, 0.0878, 0.0957, 0.1002, 0.1091, 0.104, 0.1049, 0.1123, 0.1118, 0.1158, 0.1117, 0.1111, 0.1124, 0.1021, 0.0965, 0.0972, 0.0887, 0.086, 0.0879, 0.0904, 0.1093, 0.1206, 0.1271, 0.1267, 0.1349, 0.1768, 0.1939, 0.1905, 0.1767, 0.1575, 0.1629, 0.157, 0.1511],
+        }
+
+# data_nw_elc: elc. data from EUROSTAT used elc. from 50 Mio kWh/a
+data_nw_elc = {
+        "DATE"    : pd.date_range(start="2004", end="2018-07-31", freq="6ME", inclusive="left"),
+        "no_tax"  : [0.0764, 0.0793, 0.0840, 0.0877, 0.0949, 0.0963, 0.1003, 0.0832, \
+                     0.0900, 0.0899, 0.0942, 0.0901, 0.0878, 0.0957, 0.1002, 0.1091, \
+                     0.1040, 0.1049, 0.1123, 0.1118, 0.1158, 0.1117, 0.1111, 0.1124, \
+                     0.1021, 0.0965, 0.0972, 0.0887, 0.0860],
+        }
+
+
+# Backup (detailed historical data from BDEW)
+# data_20: elc. data from BDEW, for used elc. from 160.000 - 20 Mio kWh/a
+data_20 = {
+        "DATE" : pd.date_range(start="1998", end="2023-07-31", freq="6ME", inclusive="left"),
+        "BNV"  : [0.0915, 0.0915, 0.0851, 0.0851, 0.0546, 0.0546, 0.0561, 0.0561, 0.0599, 0.0599, 0.0617, 0.0617, 0.0702, 0.0702, 0.0765,\
+                  0.0765, 0.0926, 0.0926, 0.0900, 0.0900, 0.1070, 0.1070, 0.0870, 0.0870, 0.0863, 0.0863, 0.0883, 0.0883, 0.0898, \
+                  0.0898, 0.0785, 0.0785, 0.0695, 0.0695, 0.0719, 0.0719, 0.07, 0.07, 0.0802, 0.0802, 0.0897, 0.0897, 0.0948, 0.0948, \
+                  0.0848, 0.0848, 0.1230, 0.1230, 0.2658, 0.5066, 0.3725],
+        "KA"   : [0.0011]*51,
+        "EEGU" : [0.0008, 0.0008, 0.0009, 0.0009, 0.002, 0.002, 0.0025, 0.0025, 0.0035, 0.0035, 0.0042, 0.0042, 0.0051, 0.0051, 0.0069, \
+                  0.0069, 0.0088, 0.0088, 0.0102, 0.0102, 0.0116, 0.0116, 0.0131, 0.0131, 0.0205, 0.0205, 0.0353, 0.0353, 0.03592, \
+                  0.03592, 0.05277, 0.05277, 0.06240, 0.06240, 0.06170, 0.06170, 0.06354, 0.06354, 0.06880, 0.06880, 0.06792, 0.06792,\
+                  0.06405, 0.06405, 0.06756, 0.06756, 0.065, 0.065, 0.03723, 0, 0],
+        "KWKG" : [0, 0, 0, 0, 0.0013, 0.0013, 0.0019, 0.0019, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, \
+                  0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0003, 0.0003, 0.0004, 0.0004, 0.0007, \
+                  0.0007, 0.0007, 0.0007, 0.0008, 0.0008, 0.0028, 0.0028, 0.0029, 0.0029, 0.0026, 0.0026, 0.0028, 0.0028, 0.00226,\
+                  0.00226, 0.00254, 0.00254, 0.00378, 0.00378, 0.00357],
+        "19U" : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0007, 0.0007, 0.0010, 0.0010, \
+                 0.0023, 0.0023, 0.0015, 0.0015, 0.0024, 0.0024, 0.0025, 0.0025, 0.0024, 0.0024, 0.0020, 0.0020, 0.0023, 0.0023, \
+                 0.0027, 0.0027, 0.0027, 0.0027, 0.0026],
+        "ONU"  : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0017, 0.0017, 0.0017, \
+                  0.0017, -0.0001, -0.0001, 0.0003, 0.0003, -0.00002, -0.00002, 0.00040, 0.00040, 0.00416, 0.00416, 0.00416, 0.00416, \
+                  0.00395, 0.00395, 0.00419, 0.00419, 0.00591],
+        "UAL"  : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.00009, 0.00009, \
+                  0.00006, 0.00006, 0, 0, 0.00006, 0.00006, 0.00011, 0.00011, 0.00005, 0.00005, 0.00007, 0.00007, 0.00009, 0.00009, \
+                  0.00003, 0.00003, 0],
+        "SST" : [0, 0, 0.0015, 0.0015, 0.0026, 0.0026, 0.0031, 0.0031, 0.0036, 0.0036, 0.0123, 0.0123, 0.0123, 0.0123, 0.0123, 0.0123, \
+                 0.0123, 0.0123, 0.0123, 0.0123, 0.0123, 0.0123, 0.0123, 0.0123, 0.0123, 0.0123, 0.01537, 0.01537, 0.01537, 0.01537, \
+                 0.01537, 0.01537, 0.01537, 0.01537, 0.01537, 0.01537, 0.01537, 0.01537, 0.01537, 0.01537, 0.01537, 0.01537, 0.01537, \
+                 0.01537, 0.01537, 0.01537, 0.01537, 0.01537, 0.01537, 0.01537, 0.01537]
+        }
+
+# data_70_150: data from BDEW, for used elc. from 70-150 Mio kWh/a 
+data_70_150 = {
+        "DATE"    : pd.date_range(start="2007", end="2023-07-31", freq="6ME", inclusive="left"),
+        "BNV"  : [0.0701, 0.0701, 0.0766, 0.0766, 0.0759, 0.0759, 0.0686, 0.0686, 0.0724, 0.0724, 0.0648, 0.0648, 0.0629, 0.0629,\
+                  0.0597, 0.0597, 0.0555, 0.0555, 0.0429, 0.0429, 0.0445, 0.0445, 0.0468, 0.0468, 0.0497, 0.0497, 0.0462, 0.0462, 0.0626, 0.0626,\
+                  0.1471, 0.1471, 0.1508],
+        }
+
+
+
+# 🔴 GEÄNDERT: source metadata for historical input series used by both scripts.
+# The numerical time series above are used for Prophet forecasts in both AWE and PEMWE.
+HISTORICAL_INPUT_SOURCES = {
+    "data_elc": {
+        "description": "Non-household electricity prices, half-yearly, no_tax / excluding taxes; original series extended to 2025-S2 using Eurostat EU aggregate excluding-tax values; used for S1 electricity forecast.",
+        "source": "Eurostat data browser nrg_pc_205 / Eurostat Electricity price statistics",
+        "source_url": "https://ec.europa.eu/eurostat/databrowser/view/nrg_pc_205/default/table?lang=en",
+        "unit": "EUR/kWh",
+    },
+    "data_nw_elc": {
+        "description": "Germany non-household electricity prices, pre-crisis subset until 2018; used for S2 post-normalisation forecast.",
+        "source": "Eurostat data browser nrg_pc_205 / Eurostat Electricity price statistics",
+        "source_url": "https://ec.europa.eu/eurostat/databrowser/view/nrg_pc_205/default/table?lang=en",
+        "unit": "EUR/kWh",
+    },
+    "water_data": {
+        "description": "Berlin drinking water fee (WF) and wastewater fee (WWF); used for water-price forecast.",
+        "source": "Berliner Wasserbetriebe tariff archive",
+        "source_url": "https://www.bwb.de/en/1720.php",
+        "unit": "EUR/kg water equivalent in script; original tariff basis EUR/m3",
+    },
+}
