@@ -10,7 +10,7 @@ from IPython.display import clear_output
 # - Water Data -
 
 # water_data: from Berlin water price
-# 🔴 GEÄNDERT: historical water series extended to 2025-S2. Berlin water/wastewater tariff values are held constant after the last published tariff change.
+# historical water series extended to 2025-S2. Berlin water/wastewater tariff values are held constant after the last published tariff change.
 water_data = {"DATE" : pd.date_range(start="2008", end="2026-01-31", freq="6ME", inclusive="left"),
               "WF" : [0.002071, 0.002071, 0.002038, 0.002038, 0.0020325, 0.0020325, 0.002027, 0.002027, 0.002027, 0.002027, 0.002027, 0.002027, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694, 0.001694],
               "WWF" : [0.002567, 0.002567, 0.002543, 0.002543, 0.002504, 0.002504, 0.002464, 0.002464, 0.002464, 0.002464, 0.002464, 0.002464, 0.002464, 0.002464, 0.002307, 0.002307, 0.002303, 0.002303, 0.002303, 0.002303, 0.00221, 0.00221, 0.00221, 0.00221, 0.00221, 0.00221, 0.00221, 0.00221, 0.002155, 0.002155, 0.002155, 0.002155, 0.002155, 0.002155, 0.002155, 0.002155]
@@ -22,7 +22,7 @@ water_data = {"DATE" : pd.date_range(start="2008", end="2026-01-31", freq="6ME",
 
 # Historical elc. data are from EUROSTAT
 # data_elc: elc. data from EUROSTAT used elc. from 50 Mio kWh/a
-# 🔴 GEÄNDERT: historical electricity series extended through 2025-S2; forecasts start from the last historical period for continuity.
+#  historical electricity series extended through 2025-S2; forecasts start from the last historical period for continuity.
 data_elc = {
         "DATE"    : pd.date_range(start="2004", end="2026-01-31", freq="6ME", inclusive="left"),
         "no_tax"  : [0.0764, 0.0793, 0.0840, 0.0877, 0.0949, 0.0963, 0.1003, 0.0832,
@@ -85,7 +85,7 @@ data_70_150 = {
 
 
 
-# 🔴 GEÄNDERT: source metadata for updated historical inputs
+#  source metadata for updated historical inputs
 HISTORICAL_INPUT_SOURCES = {
     "electricity": "Eurostat electricity price statistics / nrg_pc_205; active no_tax series extended to 2025-S2.",
     "water": "Berliner Wasserbetriebe published water and wastewater tariffs; active water_data extended to 2025-S2 using current tariff levels.",
