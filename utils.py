@@ -11,8 +11,8 @@ from prophet import Prophet
 from statsmodels.tsa.arima.model import ARIMA
 from statsforecast import StatsForecast
 from statsforecast.models import AutoARIMA, AutoETS
-import pyaf.ForecastEngine as autof
-from neuralprophet import NeuralProphet
+#import pyaf.ForecastEngine as autof
+#from neuralprophet import NeuralProphet
 
 # Prediction for water price in S1 and S2
 def prophet_fit_predict_water(odf, var="BNV", years=50, plot=True):
