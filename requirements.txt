@@ -1,0 +1,11 @@
+pandas
+matplotlib
+scipy
+monaco
+scikit-learn
+statsmodels
+statsforecast
+prophet
+SALib
+oplotly>=6.1.1
+kaleido>=1.0.0
